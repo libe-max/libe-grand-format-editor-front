@@ -1,0 +1,215 @@
+html, body { margin: 0; padding: 0; }
+* { box-sizing: border-box; }
+
+/* * * * * * * * * * * * * * * * * * * * 
+ *
+ * MEGAPHONE
+ *
+ * * * * * * * * * * * * * * * * * * * */
+
+.grand-format-editor-megaphone {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  cursor: pointer;
+  z-index: 30000;
+}
+
+.grand-format-editor-megaphone__inner {
+  position: absolute;
+  right: .5rem;
+  bottom: .5rem;
+  width: 4rem;
+  height: 4rem;
+  background: orange;
+  cursor: default;
+  border-radius: 4rem;
+  transition: width 200ms, height 200ms, border-radius 200ms;
+  display: flex;
+  flex-direction: column;
+}
+
+.grand-format-editor-megaphone__open-button {
+  width: 100%;
+  height: 100%;
+  background: yellow;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 4rem;
+}
+
+.grand-format-editor-megaphone__notification,
+.grand-format-editor-megaphone__head,
+.grand-format-editor-megaphone__messages,
+.grand-format-editor-megaphone__identity,
+.grand-format-editor-megaphone__expression,
+.grand-format-editor-megaphone__secondary-button {
+  display: none;
+}
+
+.grand-format-editor-megaphone__notification {
+  position: absolute;
+  top: -.5rem;
+  right: 0;
+  padding: 0 .5rem;
+  height: 2rem;
+  border-radius: 1rem;
+  background: red;
+  align-items: center;
+  justify-content: center;
+}
+
+.grand-format-editor-megaphone__head {
+  justify-content: space-between;
+  background: purple;
+}
+
+.grand-format-editor-megaphone__messages {
+  flex-grow: 1;
+  background: #3377FF;
+  overflow-y: scroll;
+}
+
+.grand-format-editor-megaphone__identity {
+  height: 2rem;
+  width: 100%;
+  background: aliceblue;
+}
+
+.grand-format-editor-megaphone__expression {
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: darkorange;
+}
+
+.grand-format-editor-megaphone__expression textarea {
+  flex-grow: 1;
+  height: 4rem;
+}
+
+/* Has notifications modifier */
+.grand-format-editor-megaphone_has-notifications
+  .grand-format-editor-megaphone__notification {
+    display: flex;
+}
+
+.grand-format-editor-megaphone_is-opened
+  .grand-format-editor-megaphone__inner {
+    width: 22rem;
+    max-width: calc(100vw - 1rem);
+    height: calc(100vh - 4rem);
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 0 2rem .5rem rgba(33, 33, 33, .1);
+}
+
+.grand-format-editor-megaphone_is-opened
+  .grand-format-editor-megaphone__open-button,
+.grand-format-editor-megaphone_is-opened
+  .grand-format-editor-megaphone__notification,
+.grand-format-editor-megaphone_is-opened
+  .grand-format-editor-megaphone__secondary-button {
+    display: none;
+}
+
+.grand-format-editor-megaphone_is-opened
+  .grand-format-editor-megaphone__head,
+.grand-format-editor-megaphone_is-opened
+  .grand-format-editor-megaphone__expression {
+    display: flex;
+}
+
+.grand-format-editor-megaphone_is-opened
+  .grand-format-editor-megaphone__messages,
+.grand-format-editor-megaphone_is-opened
+  .grand-format-editor-megaphone__identity {
+    display: block;
+}
+
+/* * * * * * * * * * * * * * * * * * * * 
+ *
+ * HOME PAGE
+ *
+ * * * * * * * * * * * * * * * * * * * */
+
+.grand-format-editor-home-page {
+  background: blue;
+  height: 20000px;
+}
+
+/* * * * * * * * * * * * * * * * * * * * 
+ *
+ * EDITOR PAGE
+ *
+ * * * * * * * * * * * * * * * * * * * */
+
+.grand-format-editor-editor-controls {
+  z-index: 20000;
+  background-color: transparent;
+  cursor: pointer;
+  /*display: none;*/
+  visibility: hidden;
+  transition: background-color 200ms, visibility 200ms;
+}
+
+.grand-format-editor-editor-controls,
+.grand-format-editor-preview-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+}
+
+.grand-format-editor-editor-controls__inner {
+  max-width: 38rem;
+  transform: translateX(-100%);
+  background: coral;
+  height: 100%;
+  overflow-y: scroll;
+  cursor: default;
+  box-shadow: 0 0 2rem .5rem rgba(33, 33, 33, .1);
+  transition: transform 200ms;
+}
+
+.grand-format-editor-preview-panel {
+  background: aliceblue;
+  padding: 1rem;
+  overflow-y: scroll;
+}
+
+.grand-format-editor-preview-panel__longform {
+  width: 100%;
+  max-width: 63rem;
+  min-height: 100vh;
+  background: white;
+  margin: 0 auto;
+  box-shadow: 0 0 2rem .5rem rgba(33, 33, 33, .1);
+}
+
+.grand-format-editor-editor-page_edition-mode
+  .grand-format-editor-editor-controls {
+    background-color: rgba(33, 33, 33, .3);
+    /*display: block;*/
+    visibility: visible;
+}
+
+.grand-format-editor-editor-page_edition-mode
+  .grand-format-editor-editor-controls__inner {
+    transform: translateX(0);
+}
+
+.grand-format-editor-editor-actions {
+  position: absolute;
+  top: .5rem;
+  left: .5rem;
+  width: 4rem;
+  height: 4rem;
+  background: green;
+  z-index: 10000;
+}
