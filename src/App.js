@@ -36,6 +36,8 @@ class App extends Component {
     this.handleUserJoinedRoom = this.handleUserJoinedRoom.bind(this)
     this.handleUserLeftRoom = this.handleUserLeftRoom.bind(this)
     this.handleUserChangedName = this.handleUserChangedName.bind(this)
+    this.handleNewLongform = this.handleNewLongform.bind(this)
+    this.handleYourNewLongform = this.handleYourNewLongform.bind(this)
     this.handleNewMessage = this.handleNewMessage.bind(this)
     this.handleYouLeftRoom = this.handleYouLeftRoom.bind(this)
     this.handleYouJoinedRoom = this.handleYouJoinedRoom.bind(this)
@@ -48,6 +50,8 @@ class App extends Component {
     this.socket.on('USER LEFT ROOM', this.handleUserLeftRoom)
     this.socket.on('USER CHANGED NAME', this.handleUserChangedName)
     this.socket.on('NEW MESSAGE', this.handleNewMessage)
+    this.socket.on('NEW LONGFORM', this.handleNewLongform)
+    this.socket.on('YOUR NEW LONGFORM', this.handleYourNewLongform)
     this.socket.on('ALL LONGFORMS', this.handleAllLongforms)
     this.socket.on('LONGFORM', this.handleLongform)
     this.socket.on('YOU LEFT ROOM', this.handleYouLeftRoom)
@@ -184,36 +188,6 @@ class App extends Component {
 
   /* * * * * * * * * * * * * * * * * * * * * * *
    *
-   * HANDLE ALL LONGFORMS
-   *
-   * * * * * * * * * * * * * * * * * * * * * * */
-  handleAllLongforms (payload) {
-    console.log('> ALL LONGFORMS', payload)
-    const { longforms } = payload
-    const newLongforms = longforms.map(longform => this.upgradeChangesToNewLongformEdition(longform))
-    this.setState(current => ({
-      ...current,
-      longforms: newLongforms,
-      events: [...current.events, {
-        type: 'ALL LONGFORMS',
-        received_on: Date.now(),
-        payload
-      }]
-    }))
-  }
-
-  /* * * * * * * * * * * * * * * * * * * * * * *
-   *
-   * HANDLE LONGFORM
-   *
-   * * * * * * * * * * * * * * * * * * * * * * */
-  handleLongform (payload) {
-    console.log('> LONGFORM', payload)
-    const { longform } = payload
-  }
-
-  /* * * * * * * * * * * * * * * * * * * * * * *
-   *
    * HANDLE USER JOINED ROOM
    *
    * * * * * * * * * * * * * * * * * * * * * * */
@@ -261,6 +235,54 @@ class App extends Component {
         payload
       }]
     }))
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * HANDLE NEW LONGFORM
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  handleNewLongform (payload) {
+    console.log('> NEW LONGFORM', payload)
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * HANDLE YOUR NEW LONGFORM
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  handleYourNewLongform (payload) {
+    console.log('> YOUR NEW LONGFORM', payload)
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * HANDLE ALL LONGFORMS
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  handleAllLongforms (payload) {
+    console.log('> ALL LONGFORMS', payload)
+    const { longforms } = payload
+    const newLongforms = longforms.map(longform => this.upgradeChangesToNewLongformEdition(longform))
+    this.setState(current => ({
+      ...current,
+      longforms: newLongforms,
+      events: [...current.events, {
+        type: 'ALL LONGFORMS',
+        received_on: Date.now(),
+        payload
+      }]
+    }))
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * HANDLE LONGFORM
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  handleLongform (payload) {
+    console.log('> LONGFORM', payload)
+    const { longform } = payload
   }
 
   /* * * * * * * * * * * * * * * * * * * * * * *
@@ -387,7 +409,7 @@ class App extends Component {
               {...routerStuff}
               longforms={longforms}
               emitCreateNewLongform={this.emitCreateNewLongform}
-              emitJoinLobby={() => this.emitJoinRoom('home')}
+              emitJoinLobby={() => this.emitJoinRoom('lobby')}
               emitRequestAllLongforms={this.emitRequestAllLongforms} />)} />
           <Route path='/edit/:id' exact render={routerStuff => (
             <EditorPage
