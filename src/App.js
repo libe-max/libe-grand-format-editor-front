@@ -6,6 +6,7 @@ import EditorPage from './components/pages/EditorPage'
 import Megaphone from './components/blocks/Megaphone'
 
 class App extends Component {
+
   /* * * * * * * * * * * * * * * * * * * * * * *
    *
    * CONSTRUCTOR
@@ -13,19 +14,19 @@ class App extends Component {
    * * * * * * * * * * * * * * * * * * * * * * */
   constructor (props) {
     super(props)
-
     this.c = 'grand-format-editor'
     this.state = {
       longforms: [],
       events: [],
       username: null
     }
-    
+    // Methods
     this.getUsernameCookie = this.getUsernameCookie.bind(this)
     this.upgradeChangesToNewLongformEdition = this.upgradeChangesToNewLongformEdition.bind(this)
     this.triggerChangeUserName = this.triggerChangeUserName.bind(this)
     this.emitJoinRoom = this.emitJoinRoom.bind(this)
     this.emitChangeUsername = this.emitChangeUsername.bind(this)
+    this.emitCreateNewLongform = this.emitCreateNewLongform.bind(this)
     this.emitRequestAllLongforms = this.emitRequestAllLongforms.bind(this)
     this.emitRequestLongform = this.emitRequestLongform.bind(this)
     this.emitPostMessage = this.emitPostMessage.bind(this)
@@ -41,13 +42,12 @@ class App extends Component {
     this.handleYouChangedName = this.handleYouChangedName.bind(this)
     this.handleYourNewMessage = this.handleYourNewMessage.bind(this)
     this.handleYourFormEdition = this.handleYourFormEdition.bind(this)
-    
+    // Socket messages handlers
     this.socket = new SocketIoClient()
     this.socket.on('USER JOINED ROOM', this.handleUserJoinedRoom)
     this.socket.on('USER LEFT ROOM', this.handleUserLeftRoom)
     this.socket.on('USER CHANGED NAME', this.handleUserChangedName)
     this.socket.on('NEW MESSAGE', this.handleNewMessage)
-
     this.socket.on('ALL LONGFORMS', this.handleAllLongforms)
     this.socket.on('LONGFORM', this.handleLongform)
     this.socket.on('YOU LEFT ROOM', this.handleYouLeftRoom)
@@ -57,6 +57,11 @@ class App extends Component {
     this.socket.on('YOUR FORM EDITION', this.handleYourFormEdition)
   }
 
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * DID MOUNT
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
   componentDidMount () {
     const username = this.getUsernameCookie() || this.triggerChangeUserName()
     this.setState({ username })
@@ -87,7 +92,7 @@ class App extends Component {
 
   /* * * * * * * * * * * * * * * * * * * * * * *
    *
-   * UPGRADE CHANGES TO NEW LONGFORM EDITION
+   * TRIGGER CHANGE USER NAME
    *
    * * * * * * * * * * * * * * * * * * * * * * */
   triggerChangeUserName () {
@@ -121,6 +126,16 @@ class App extends Component {
     const request = { username }
     console.log('CHANGE USERNAME', request)
     this.socket.emit('CHANGE USERNAME', request)
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * EMIT CREATE NEW LONGFORM
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  emitCreateNewLongform () {
+    console.log('CREATE NEW LONGFORM', {})
+    this.socket.emit('CREATE NEW LONGFORM', {})
   }
 
   /* * * * * * * * * * * * * * * * * * * * * * *
@@ -371,6 +386,7 @@ class App extends Component {
             <HomePage
               {...routerStuff}
               longforms={longforms}
+              emitCreateNewLongform={this.emitCreateNewLongform}
               emitJoinLobby={() => this.emitJoinRoom('home')}
               emitRequestAllLongforms={this.emitRequestAllLongforms} />)} />
           <Route path='/edit/:id' exact render={routerStuff => (

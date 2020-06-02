@@ -1,6 +1,25 @@
 import React, { Component } from 'react'
 
+/*
+ *   Megaphone component
+ *   ------------------------------------------------------
+ *
+ *   DESCRIPTION
+ *   Displays the incoming and outcoming messages
+ *
+ *   PROPS
+ *   username, events, room, sendMessage,
+ *   triggerChangeUserName
+ *
+ */
+ 
 class Megaphone extends Component {
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * CONSTRUCTOR
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
   constructor (props) {
     super()
     this.state = {
@@ -14,16 +33,31 @@ class Megaphone extends Component {
     this.handleTextareaChange = this.handleTextareaChange.bind(this)
   }
 
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * HANDLE SEND MESSAGE
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
   handleSendMessage (e) {
     const message = this.$textarea.value
     if (!message) return
     this.sendMessage(message)
   }
 
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * HANDLE OPEN BUTTON CLICK
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
   handleOpenButtonClick (e) {
     this.setState({ is_opened: true })
   }
 
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * HANDLE CLOSE BUTTON CLICJ
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
   handleCloseButtonClick (e) {
     this.setState({
       is_opened: false,
@@ -31,6 +65,11 @@ class Megaphone extends Component {
     })
   }
 
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * HANDLE TEXTAREA CHANGE
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
   handleTextareaChange (e) {
     const message = this.$textarea.value
     if (e.key !== 'Enter' || !message) return
@@ -38,11 +77,21 @@ class Megaphone extends Component {
     this.sendMessage(message)
   }
 
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * SEND MESSAGE
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
   sendMessage (message) {
     this.$textarea.value = ''
     this.props.sendMessage(message)
   }
   
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * RENDER
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
   render () {
     const { state, props, c } = this
     const { username, triggerChangeUserName, events, room } = props
@@ -57,6 +106,7 @@ class Megaphone extends Component {
     if (state.is_opened) classes.push(`${c}_is-opened`)
     if (!state.is_opened && nbNotifications) classes.push(`${c}_has-notifications`)
 
+    /* Return */
     return <div className={classes.join(' ')}>
       <div className={`${c}__inner`}>
         <button

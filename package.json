@@ -17,7 +17,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "standard": "standard --verbose | snazzy",
+    "standard-fix": "standard --fix --verbose | snazzy"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -33,5 +35,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "snazzy": "^8.0.0",
+    "standard": "^14.3.4"
   }
 }
