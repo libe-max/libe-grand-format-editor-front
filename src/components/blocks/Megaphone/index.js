@@ -126,26 +126,30 @@ class Megaphone extends Component {
         <div className={`${c}__messages`}>{events
           .sort((a, b) => a.received_on - b.received_on)
           .map(event => event.type === 'ALL LONGFORMS'
-            ? <p><i>Data in</i></p>
+            ? <p key={event.received_on}><i>Data in</i></p>
+            : event.type === 'LONGFORM'
+            ? <p key={event.received_on}><i>Data in</i></p>
             : event.type === 'USER JOINED ROOM'
-            ? <p><i>{event.payload.username} a rejoint {event.payload.room}</i></p>
+            ? <p key={event.received_on}><i>{event.payload.username} a rejoint {event.payload.room}</i></p>
             : event.type === 'USER LEFT ROOM'
-            ? <p><i>{event.payload.username} a quitté {event.payload.room}</i></p>
+            ? <p key={event.received_on}><i>{event.payload.username} a quitté {event.payload.room}</i></p>
             : event.type === 'USER CHANGED NAME'
-            ? <p><i>{event.payload.pUsername} s'appelle maintenant {event.payload.username}</i></p>
+            ? <p key={event.received_on}><i>{event.payload.pUsername} s'appelle maintenant {event.payload.username}</i></p>
             : event.type === 'NEW MESSAGE'
-            ? <p><strong>{event.payload.username} :</strong> {event.payload.message}</p>
+            ? <p key={event.received_on}><strong>{event.payload.username} :</strong> {event.payload.message}</p>
             : event.type === 'YOU LEFT ROOM'
-            ? <p><i>Vous avez quitté {event.payload.room}</i></p>
+            ? <p key={event.received_on}><i>Vous avez quitté {event.payload.room}</i></p>
             : event.type === 'YOU JOINED ROOM'
-            ? <p><i>Vous avez rejoint {event.payload.room}</i></p>
+            ? <p key={event.received_on}><i>Vous avez rejoint {event.payload.room}</i></p>
             : event.type === 'YOU CHANGED NAME'
-            ? <p><i>Vous vous appelez maintenant {event.payload.username}</i></p>
+            ? <p key={event.received_on}><i>Vous vous appelez maintenant {event.payload.username}</i></p>
             : event.type === 'YOUR NEW MESSAGE'
-            ? <p><strong>Vous :</strong> {event.payload.message}</p>
+            ? <p key={event.received_on}><strong>Vous :</strong> {event.payload.message}</p>
             : event.type === 'YOUR FORM EDITION'
-            ? <p>Vos modifications ont été sauvegardées</p>
-            : <p>Message inconnu, erreur.</p>
+            ? <p key={event.received_on}>Vos modifications ont été sauvegardées</p>
+            : event.type === 'SERVER ERROR'
+            ? <p key={event.received_on}>Le serveur a répondu une erreur : {event.payload.message}</p>
+            : <p key={Math.random()}>Message inconnu, erreur.</p>
           )
         }</div>
         <button

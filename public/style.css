@@ -138,7 +138,7 @@ html, body { margin: 0; padding: 0; }
  * * * * * * * * * * * * * * * * * * * */
 
 .grand-format-editor-home-page {
-  background: blue;
+  /*background: blue;*/
   height: 20000px;
 }
 

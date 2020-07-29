@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { BrowserRouter as Router, Switch, Route, Redirect, Link } from 'react-router-dom'
 import SocketIoClient from 'socket.io-client'
+import diff from 'changeset'
 import HomePage from './components/pages/HomePage'
 import EditorPage from './components/pages/EditorPage'
 import Megaphone from './components/blocks/Megaphone'
@@ -17,13 +18,17 @@ class App extends Component {
     this.c = 'grand-format-editor'
     this.state = {
       longforms: [],
+      local_changes: [],
       events: [],
-      username: null
+      username: this.getUsernameCookie() || this.triggerChangeUserName()
     }
     // Methods
     this.getUsernameCookie = this.getUsernameCookie.bind(this)
-    this.upgradeChangesToNewLongformEdition = this.upgradeChangesToNewLongformEdition.bind(this)
     this.triggerChangeUserName = this.triggerChangeUserName.bind(this)
+    this.getCurrentLongformViaId = this.getCurrentLongformViaId.bind(this)
+    this.addBlockToLongformViaId = this.addBlockToLongformViaId.bind(this)
+    this.storeLongformChangesViaId = this.storeLongformChangesViaId.bind(this)
+    // WS emiters
     this.emitJoinRoom = this.emitJoinRoom.bind(this)
     this.emitChangeUsername = this.emitChangeUsername.bind(this)
     this.emitCreateNewLongform = this.emitCreateNewLongform.bind(this)
@@ -31,6 +36,7 @@ class App extends Component {
     this.emitRequestLongform = this.emitRequestLongform.bind(this)
     this.emitPostMessage = this.emitPostMessage.bind(this)
     this.emitPostLongformEdition = this.emitPostLongformEdition.bind(this)
+    // WS handlers
     this.handleAllLongforms = this.handleAllLongforms.bind(this)
     this.handleLongform = this.handleLongform.bind(this)
     this.handleUserJoinedRoom = this.handleUserJoinedRoom.bind(this)
@@ -44,7 +50,8 @@ class App extends Component {
     this.handleYouChangedName = this.handleYouChangedName.bind(this)
     this.handleYourNewMessage = this.handleYourNewMessage.bind(this)
     this.handleYourFormEdition = this.handleYourFormEdition.bind(this)
-    // Socket messages handlers
+    this.handleServerError = this.handleServerError.bind(this)
+    // Listen to WS messages
     this.socket = new SocketIoClient()
     this.socket.on('USER JOINED ROOM', this.handleUserJoinedRoom)
     this.socket.on('USER LEFT ROOM', this.handleUserLeftRoom)
@@ -59,16 +66,7 @@ class App extends Component {
     this.socket.on('YOU CHANGED NAME', this.handleYouChangedName)
     this.socket.on('YOUR NEW MESSAGE', this.handleYourNewMessage)
     this.socket.on('YOUR FORM EDITION', this.handleYourFormEdition)
-  }
-
-  /* * * * * * * * * * * * * * * * * * * * * * *
-   *
-   * DID MOUNT
-   *
-   * * * * * * * * * * * * * * * * * * * * * * */
-  componentDidMount () {
-    const username = this.getUsernameCookie() || this.triggerChangeUserName()
-    this.setState({ username })
+    this.socket.on('SERVER ERROR', this.handleServerError)
   }
 
   /* * * * * * * * * * * * * * * * * * * * * * *
@@ -87,15 +85,6 @@ class App extends Component {
 
   /* * * * * * * * * * * * * * * * * * * * * * *
    *
-   * UPGRADE CHANGES TO NEW LONGFORM EDITION
-   *
-   * * * * * * * * * * * * * * * * * * * * * * */
-  upgradeChangesToNewLongformEdition (longform) {
-    return longform
-  }
-
-  /* * * * * * * * * * * * * * * * * * * * * * *
-   *
    * TRIGGER CHANGE USER NAME
    *
    * * * * * * * * * * * * * * * * * * * * * * */
@@ -105,6 +94,68 @@ class App extends Component {
     document.cookie = `username=${username};`
     this.setState({ username: username })
     this.emitChangeUsername(username)
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * TRIGGER CHANGE USER NAME
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  getCurrentLongformViaId (id) {
+    const longform = this.state.longforms.find(longform => longform._id === id)
+    if (!longform) return
+
+    const localChanges = this.state.local_changes.find(changes => changes._id === id)
+    if (!localChanges) return longform
+
+    return localChanges.changes_list.reduce((acc, curr) => {
+      return diff.apply(curr, acc)
+    }, { ...longform })
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * ADD BLOCK TO LONGFORM
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  addBlockToLongformViaId (id) {
+    console.log('add block', id)
+    const longformWithLocalChanges = this.getCurrentLongformViaId(id)
+    if (!longformWithLocalChanges) return
+    const updatedLongform = {
+      ...longformWithLocalChanges,
+      blocks: longformWithLocalChanges.blocks
+        ? [...longformWithLocalChanges.blocks, { id: Math.random().toString(36).slice(2) }]
+        : [{ id: Math.random().toString(36).slice(2) }]
+    }
+    const changes = diff(longformWithLocalChanges, updatedLongform)
+    this.storeLongformChangesViaId(id, changes)
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * STORE LONGFORM CHANGES VIA ID
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  storeLongformChangesViaId (id, changes) {
+    const currentPosInLocalChanges = this.state.local_changes.findIndex(change => change._id === id)
+    const currentLocalChanges = currentPosInLocalChanges > -1
+      ? this.state.local_changes[currentPosInLocalChanges]
+      : { _id: id, changes_list: [] }
+    currentLocalChanges.changes_list.push(changes)
+    this.setState(current => ({
+      ...current,
+      local_changes: currentPosInLocalChanges > -1
+        ? [
+          ...current.local_changes.slice(0, currentPosInLocalChanges),
+          currentLocalChanges,
+          ...current.local_changes.slice(currentPosInLocalChanges + 1)
+        ]
+        : [
+          ...current.local_changes,
+          currentLocalChanges
+        ]
+    }))
   }
 
   /* * * * * * * * * * * * * * * * * * * * * * *
@@ -244,6 +295,15 @@ class App extends Component {
    * * * * * * * * * * * * * * * * * * * * * * */
   handleNewLongform (payload) {
     console.log('> NEW LONGFORM', payload)
+    this.setState(current => ({
+      ...current,
+      longforms: [...current.longforms, payload.longform],
+      events: [...current.events, {
+        type: 'NEW LONGFORM',
+        received_on: Date.now(),
+        payload
+      }]
+    }))
   }
 
   /* * * * * * * * * * * * * * * * * * * * * * *
@@ -253,6 +313,18 @@ class App extends Component {
    * * * * * * * * * * * * * * * * * * * * * * */
   handleYourNewLongform (payload) {
     console.log('> YOUR NEW LONGFORM', payload)
+    this.setState(current => {
+      this.$router.history.push(`/edit/${payload.longform._id}`)
+      return {
+        ...current,
+        longforms: [...current.longforms, payload.longform],
+        events: [...current.events, {
+          type: 'NEW LONGFORM',
+          received_on: Date.now(),
+          payload
+        }]
+      }
+    })
   }
 
   /* * * * * * * * * * * * * * * * * * * * * * *
@@ -263,10 +335,9 @@ class App extends Component {
   handleAllLongforms (payload) {
     console.log('> ALL LONGFORMS', payload)
     const { longforms } = payload
-    const newLongforms = longforms.map(longform => this.upgradeChangesToNewLongformEdition(longform))
     this.setState(current => ({
       ...current,
-      longforms: newLongforms,
+      longforms,
       events: [...current.events, {
         type: 'ALL LONGFORMS',
         received_on: Date.now(),
@@ -283,6 +354,33 @@ class App extends Component {
   handleLongform (payload) {
     console.log('> LONGFORM', payload)
     const { longform } = payload
+    this.setState(current => {
+      const indexOfLongform = current.longforms.findIndex(elt => elt._id === longform._id)
+      if (indexOfLongform > -1) {
+        return {
+          ...current,
+          longforms: [
+            ...current.longforms.slice(0, indexOfLongform),
+            longform,
+            ...current.longforms.slice(indexOfLongform + 1)
+          ],
+          events: [...current.events, {
+            type: 'LONGFORM',
+            received_on: Date.now(),
+            payload
+          }]
+        }
+      } else {
+        return {
+          ...current,
+          longforms: [...current.longforms, longform],
+          events: [...current.events, {
+            type: 'LONGFORM',
+            received_on: Date.now()
+          }]
+        }
+      }
+    })
   }
 
   /* * * * * * * * * * * * * * * * * * * * * * *
@@ -391,6 +489,23 @@ class App extends Component {
 
   /* * * * * * * * * * * * * * * * * * * * * * *
    *
+   * HANDLE SERVER ERROR
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  handleServerError (payload) {
+    console.log('> SERVER ERROR', payload)
+    this.setState(current => ({
+      ...current,
+      events: [...current.events, {
+        type: 'SERVER ERROR',
+        received_on: Date.now(),
+        payload
+      }]
+    }))
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
    * RENDER
    *
    * * * * * * * * * * * * * * * * * * * * * * */
@@ -402,23 +517,29 @@ class App extends Component {
     const classes = [c]
 
     return <div className={classes.join(' ')}>
-      <Router>
+      <Router ref={n => this.$router = n}>
         <Switch>
-          <Route path='/' exact render={routerStuff => (
+          <Route
+            exact
+            path='/'
+            render={routerStuff => (
             <HomePage
               {...routerStuff}
               longforms={longforms}
               emitCreateNewLongform={this.emitCreateNewLongform}
               emitJoinLobby={() => this.emitJoinRoom('lobby')}
               emitRequestAllLongforms={this.emitRequestAllLongforms} />)} />
-          <Route path='/edit/:id' exact render={routerStuff => (
-            <EditorPage
-              {...routerStuff}
-              longform={longforms.find(longform => longform._id === routerStuff.match.params.id)}
-              emitJoinLongformRoom={() => this.emitJoinRoom(routerStuff.match.params.id)}
-              emitRequestLongform={() => this.emitRequestLongform(routerStuff.match.params.id)} />)} />
           <Route
-            render={() => <Redirect to="/" />} />
+            exact
+            path='/edit/:id'
+            render={routerStuff => <EditorPage
+              {...routerStuff}
+              longform={this.getCurrentLongformViaId(routerStuff.match.params.id)}
+              addBlockToLongformViaId={this.addBlockToLongformViaId}
+              emitJoinLongformRoom={() => this.emitJoinRoom(routerStuff.match.params.id)}
+              emitRequestLongform={() => this.emitRequestLongform(routerStuff.match.params.id)} />
+            } />
+          <Route render={() => <Redirect to="/" />} />
         </Switch>
         <Megaphone
           username={this.state.username}

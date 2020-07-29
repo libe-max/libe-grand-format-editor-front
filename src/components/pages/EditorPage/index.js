@@ -13,7 +13,7 @@ import EditorActions from '../../blocks/EditorActions'
  *
  *   PROPS
  *   ...routerStuff, longform, emitJoinLongformRoom,
- *   emitRequestLongform
+ *   emitRequestLongform, addBlockToLongformViaId
  *
  */
 
@@ -32,8 +32,29 @@ class EditorPage extends Component {
     this.c = 'grand-format-editor-editor-page'
     this.triggerPreviewMode = this.triggerPreviewMode.bind(this)
     this.triggerEditionMode = this.triggerEditionMode.bind(this)
-    props.emitJoinLongformRoom()
-    props.emitRequestLongform()
+    this.addBlockToLongform = this.addBlockToLongform.bind(this)
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * DID MOUNT
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  componentDidMount () {
+    this.props.emitJoinLongformRoom()
+    this.props.emitRequestLongform()
+    this.setState({ mode: 'loading' })
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
+   * DID UPDATE
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  componentDidUpdate () {
+    if (this.state.mode === 'loading' && this.props.longform) {
+      this.setState({ mode: 'edition' })
+    }
   }
 
   /* * * * * * * * * * * * * * * * * * * * * * *
@@ -56,6 +77,17 @@ class EditorPage extends Component {
 
   /* * * * * * * * * * * * * * * * * * * * * * *
    *
+   * ADD BLOCK TO LONGFORM
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  addBlockToLongform () {
+    const id = this.props.longform._id
+    if (!id) return
+    return this.props.addBlockToLongformViaId(id)
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
    * RENDER
    *
    * * * * * * * * * * * * * * * * * * * * * * */
@@ -65,13 +97,18 @@ class EditorPage extends Component {
 
     /* Assign classes */
     const classes = [c]
+    if (state.mode === 'loading') classes.push(`${c}_loading-mode`)
     if (state.mode === 'edition') classes.push(`${c}_edition-mode`)
     if (state.mode === 'preview') classes.push(`${c}_preview-mode`)
 
     /* Return */
+    if (state.mode === 'loading') return <div>Loading...</div>
     return <div className={classes.join(' ')}>
       <PreviewPanel longform={longform} />
-      <EditorControls triggerPreviewMode={this.triggerPreviewMode} />
+      <EditorControls
+        longform={longform}
+        addBlockToLongform={this.addBlockToLongform}
+        triggerPreviewMode={this.triggerPreviewMode} />
       <EditorActions triggerEditionMode={this.triggerEditionMode} />
     </div>
   }

@@ -64,7 +64,7 @@ class HomePage extends Component {
       <button onClick={this.handleCreateNewLongformButtonClick}>Créer un nouveau format</button>
       <ul>{
         longforms.map(longform => {
-          return <li>
+          return <li key={longform._id}>
             <Link to={`/edit/${longform._id}`}>{longform._id}</Link>
           </li>
         })

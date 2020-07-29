@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
  *   Displays the controls to edit the longform
  *
  *   PROPS
- *   triggerPreviewMode
+ *   longform, triggerPreviewMode, addBlockToLongform
  *
  */
  
@@ -25,6 +25,7 @@ export default class EditorControls extends Component {
     this.c = 'grand-format-editor-editor-controls'
     this.handleBgClick = this.handleBgClick.bind(this)
     this.handlePreviewClick = this.handlePreviewClick.bind(this)
+    this.handleAddBlockButtonClick = this.handleAddBlockButtonClick.bind(this)
   }
 
   /* * * * * * * * * * * * * * * * * * * * * * *
@@ -47,11 +48,22 @@ export default class EditorControls extends Component {
 
   /* * * * * * * * * * * * * * * * * * * * * * *
    *
+   * HANDLE ADD BLOCK BUTTON
+   *
+   * * * * * * * * * * * * * * * * * * * * * * */
+  handleAddBlockButtonClick (e) {
+    this.props.addBlockToLongform()
+  }
+
+  /* * * * * * * * * * * * * * * * * * * * * * *
+   *
    * RENDER
    *
    * * * * * * * * * * * * * * * * * * * * * * */
   render () {
-    const { c, state } = this
+    const { c, state, props } = this
+    const longform = props.longform || {}
+    const blocks = longform.blocks || []
 
     /* Assign classes */
     const classes = [c]
@@ -72,7 +84,16 @@ export default class EditorControls extends Component {
             Preview
           </button>
         </div>
-        EditorControls
+        <div>
+          <div>{
+            blocks.map(block => <div>
+              <input type='text' />
+            </div>)
+          }</div>
+          <button onClick={this.handleAddBlockButtonClick}>
+            Add block
+          </button>
+        </div>
       </div>
     </div>
   }
